@@ -2,18 +2,21 @@ const puppeteer = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 const AdblockerPlugin = require("puppeteer-extra-plugin-adblocker");
 
+// set up the stealth and adblocker plugins
 puppeteer.use(StealthPlugin());
 puppeteer.use(AdblockerPlugin({ blockTrackers: true }));
 
-(async () => {
+const main = async () => {
+  // uncomment the line `headless: false` to see the GUI unfold
   const browser = await puppeteer.launch({
     // headless: false,
     slowMo: 100,
     ignoreHTTPSErrors: true,
+    // idk what any of these args do, copy pasted these
     args: [
       "--window-size=1400,900",
       "--remote-debugging-port=9222",
-      "--remote-debugging-address=0.0.0.0", // You know what your doing?
+      "--remote-debugging-address=0.0.0.0", // You know what your're doing?
       "--disable-gpu",
       "--disable-features=IsolateOrigins,site-per-process",
       "--blink-settings=imagesEnabled=true",
@@ -117,6 +120,14 @@ puppeteer.use(AdblockerPlugin({ blockTrackers: true }));
         ?.innerText?.replace(/[\d\., ]/g, ""); // inverse of previous regex(but still removing commas), now only the currency symbol is left
 
       // ratings
+      const rating = +document.querySelector("span[data-testid=review-score]")
+        ?.innerText;
+      const numRatings = +document
+        .querySelector("p[data-testid=rating-static-text]")
+        ?.innerText?.split("+")[0];
+      const ratingDescription = document
+        .querySelector("p[data-testid=supplier-rating-description]")
+        ?.innerText?.toLowerCase();
 
       finalData.push({
         carName,
@@ -128,6 +139,9 @@ puppeteer.use(AdblockerPlugin({ blockTrackers: true }));
         numSmallBags,
         totalPrice,
         currencySymbol,
+        rating,
+        numRatings,
+        ratingDescription,
       });
     }
 
@@ -138,4 +152,7 @@ puppeteer.use(AdblockerPlugin({ blockTrackers: true }));
   console.log(data);
 
   await browser.close();
-})();
+};
+
+// run main function
+main();
